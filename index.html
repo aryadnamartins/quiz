@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de JavaScript</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .quiz-container { max-width: 600px; margin-top: 20px; }
+        .result { font-size: 1.5em; color: #007bff; font-weight: bold; }
+        .hidden { display: none; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container quiz-container">
+        <h2 class="text-center">Quiz de JavaScript</h2>
+        <form id="quizForm">
+            <div id="pergunta-container"></div>
+            <button type="button" id="proxima-btn" class="btn btn-primary btn-block">Próxima Pergunta</button>
+        </form>
+        <p id="resultado" class="result text-center mt-4"></p>
+        <button id="tentarNovamente" class="btn btn-warning btn-block hidden">Tentar Novamente</button>
+    </div>
+
+    <script>
+        const perguntas = [
+            {
+                pergunta: "1. Qual comando exibe uma mensagem no console do navegador?",
+                alternativas: [
+                    { valor: "a", texto: "print()" },
+                    { valor: "b", texto: "console.log()" },
+                    { valor: "c", texto: "alert()" }
+                ]
+            },
+            {
+                pergunta: "2. Qual tipo de dado representa um valor verdadeiro ou falso em JavaScript?",
+                alternativas: [
+                    { valor: "a", texto: "string" },
+                    { valor: "b", texto: "boolean" },
+                    { valor: "c", texto: "number" }
+                ]
+            },
+            {
+                pergunta: "3. Qual é a função usada para juntar elementos de um array em uma string?",
+                alternativas: [
+                    { valor: "a", texto: "join()" },
+                    { valor: "b", texto: "concat()" },
+                    { valor: "c", texto: "append()" }
+                ]
+            },
+            {
+                pergunta: "4. Como você declara uma variável em JavaScript?",
+                alternativas: [
+                    { valor: "a", texto: "var" },
+                    { valor: "b", texto: "variable" },
+                    { valor: "c", texto: "letvar" }
+                ]
+            },
+            {
+                pergunta: "5. Qual símbolo é usado para atribuir um valor a uma variável em JavaScript?",
+                alternativas: [
+                    { valor: "a", texto: "=" },
+                    { valor: "b", texto: "==" },
+                    { valor: "c", texto: "===" }
+                ]
+            }
+        ];
+
+        const gabarito = {
+            q1: 'b',
+            q2: 'b',
+            q3: 'a',
+            q4: 'a',
+            q5: 'a'
+        };
+
+        let indicePergunta = 0;
+        let pontuacao = 0;
+        let respostasErradas = []; // Para armazenar as perguntas erradas
+        let respostasUsuario = {}; // Para armazenar as respostas do usuário
+
+        // Função para exibir a pergunta atual
+        function mostrarPergunta() {
+            const perguntaContainer = document.getElementById('pergunta-container');
+            const perguntaAtual = perguntas[indicePergunta];
+
+            perguntaContainer.innerHTML = `
+                <div class="form-group">
+                    <label>${perguntaAtual.pergunta}</label>
+                    ${perguntaAtual.alternativas.map(alt => `
+                        <div>
+                            <input type="radio" name="q${indicePergunta + 1}" value="${alt.valor}"> ${alt.texto}<br>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Função para verificar a resposta e passar para a próxima
+        document.getElementById('proxima-btn').addEventListener('click', () => {
+            const resposta = document.querySelector(`input[name="q${indicePergunta + 1}"]:checked`);
+
+            if (resposta) {
+                respostasUsuario[`q${indicePergunta + 1}`] = resposta.value;
+                if (resposta.value === gabarito[`q${indicePergunta + 1}`]) {
+                    pontuacao += 2; // Cada pergunta vale 2 pontos
+                } else {
+                    respostasErradas.push(indicePergunta); // Adiciona a pergunta errada à lista
+                }
+
+                indicePergunta++;
+
+                if (indicePergunta < perguntas.length) {
+                    mostrarPergunta();
+                } else {
+                    exibirResultado();
+                }
+            } else {
+                alert("Por favor, selecione uma resposta.");
+            }
+        });
+
+        // Função para exibir o resultado final
+        function exibirResultado() {
+            const resultado = document.getElementById("resultado");
+            resultado.innerHTML = `Sua nota é: ${pontuacao} de 10.`;
+
+            // Exibir perguntas erradas
+            if (respostasErradas.length > 0) {
+                resultado.innerHTML += `<br><br><strong>Você errou as seguintes perguntas:</strong><br>`;
+                respostasErradas.forEach((indice) => {
+                    resultado.innerHTML += `Pergunta ${indice + 1}: ${perguntas[indice].pergunta}<br>`;
+                });
+
+                // Mostrar botão de tentar novamente
+                document.getElementById('tentarNovamente').classList.remove('hidden');
+            } else {
+                resultado.innerHTML += `<br><br><strong>Parabéns, você acertou tudo!</strong>`;
+            }
+
+            document.getElementById('quizForm').classList.add('hidden');
+        }
+
+        // Função para permitir tentar novamente as perguntas erradas
+        document.getElementById('tentarNovamente').addEventListener('click', () => {
+            indicePergunta = respostasErradas[0]; // Começar pela primeira pergunta errada
+            pontuacao = 0; // Resetar a pontuação
+            respostasErradas = []; // Limpar as perguntas erradas
+            respostasUsuario = {}; // Limpar as respostas anteriores
+
+            mostrarPergunta();
+            document.getElementById('resultado').innerHTML = ''; // Limpar o resultado
+            document.getElementById('tentarNovamente').classList.add('hidden');
+            document.getElementById('quizForm').classList.remove('hidden');
+        });
+
+        // Iniciar o quiz
+        mostrarPergunta();
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
